@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
+
 from app.routers import suggestions
 
 app = FastAPI(title="SecDev Course App", version="0.1.0")

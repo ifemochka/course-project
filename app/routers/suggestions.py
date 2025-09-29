@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Query
-from typing import List, Optional
+from typing import Optional
 from enum import Enum
 
 router = APIRouter(prefix="/suggestions", tags=["suggestions"])
@@ -45,7 +45,12 @@ def get_suggestion(suggestion_id: int):
 
 
 @router.put("/{suggestion_id}")
-def update_suggestion(suggestion_id: int, title: str = None, text: str = None, status: SuggestionStatus = None):
+def update_suggestion(
+    suggestion_id: int,
+    title: str = None,
+    text: str = None,
+    status: SuggestionStatus = None
+):
     for suggestion in suggestions_db:
         if suggestion["id"] == suggestion_id:
             if title is not None:
