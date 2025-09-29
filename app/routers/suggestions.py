@@ -1,6 +1,7 @@
-from fastapi import APIRouter, HTTPException, Query
-from typing import Optional
 from enum import Enum
+from typing import Optional
+
+from fastapi import APIRouter, HTTPException, Query
 
 router = APIRouter(prefix="/suggestions", tags=["suggestions"])
 
