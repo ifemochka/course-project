@@ -23,7 +23,7 @@ def create_suggestion(title: str, text: str, user_id: str = Query(...)):
         "title": title,
         "text": text,
         "user_id": user_id,
-        "status": SuggestionStatus.PENDING
+        "status": SuggestionStatus.PENDING,
     }
     suggestions_db.append(suggestion)
     current_id += 1
@@ -50,7 +50,7 @@ def update_suggestion(
     suggestion_id: int,
     title: str = None,
     text: str = None,
-    status: SuggestionStatus = None
+    status: SuggestionStatus = None,
 ):
     for suggestion in suggestions_db:
         if suggestion["id"] == suggestion_id:

@@ -5,6 +5,7 @@ from app.routers import suggestions
 
 app = FastAPI(title="SecDev Course App", version="0.1.0")
 
+
 class ApiError(Exception):
     def __init__(self, code: str, message: str, status: int = 400):
         self.code = code
@@ -23,6 +24,7 @@ async def api_error_handler(request: Request, exc: ApiError):
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
     # Normalize FastAPI HTTPException into our error envelope
+
     detail = exc.detail if isinstance(exc.detail, str) else "http_error"
     return JSONResponse(
         status_code=exc.status_code,
@@ -34,9 +36,11 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 def health():
     return {"status": "ok"}
 
+
 app.include_router(suggestions.router)
 
 # Example minimal entity (for tests/demo)
+
 _DB = {"items": []}
 
 
