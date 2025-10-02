@@ -5,7 +5,7 @@ def test_create_suggestion(client: TestClient):
     """Тест создания предложения"""
     response = client.post(
         "/suggestions/?user_id=test_user_123",
-        json={"title": "Test Suggestion", "text": "This is a test suggestion"}
+        json={"title": "Test Suggestion", "text": "This is a test suggestion"},
     )
     assert response.status_code == 200
     data = response.json()
@@ -25,7 +25,7 @@ def test_get_suggestion_by_id(client: TestClient):
     """Тест получения конкретного предложения"""
     create_response = client.post(
         "/suggestions/?user_id=test_user",
-        json={"title": "Test", "text": "Test content"}
+        json={"title": "Test", "text": "Test content"},
     )
     suggestion_id = create_response.json()["id"]
 
@@ -38,13 +38,13 @@ def test_update_suggestion(client: TestClient):
     """Тест обновления предложения"""
     create_response = client.post(
         "/suggestions/?user_id=test_user",
-        json={"title": "Original", "text": "Original text"}
+        json={"title": "Original", "text": "Original text"},
     )
     suggestion_id = create_response.json()["id"]
 
     update_response = client.put(
         f"/suggestions/{suggestion_id}",
-        json={"title": "Updated Title", "status": "approved"}
+        json={"title": "Updated Title", "status": "approved"},
     )
     assert update_response.status_code == 200
     data = update_response.json()
@@ -56,7 +56,7 @@ def test_delete_suggestion(client: TestClient):
     """Тест удаления предложения"""
     create_response = client.post(
         "/suggestions/?user_id=test_user",
-        json={"title": "To Delete", "text": "Delete me"}
+        json={"title": "To Delete", "text": "Delete me"},
     )
     suggestion_id = create_response.json()["id"]
 
@@ -71,7 +71,7 @@ def test_get_suggestions_filtered(client: TestClient):
     """Тест фильтрации предложений по статусу"""
     client.post(
         "/suggestions/?user_id=test_user",
-        json={"title": "Pending Suggestion", "text": "Pending content"}
+        json={"title": "Pending Suggestion", "text": "Pending content"},
     )
 
     response = client.get("/suggestions/?status=pending")
