@@ -78,4 +78,3 @@ def test_get_suggestions_filtered(client: TestClient):
     assert response.status_code == 200
     suggestions = response.json()
     assert all(s["status"] == "pending" for s in suggestions)
-    
