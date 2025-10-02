@@ -8,7 +8,8 @@ client = TestClient(app)
 def test_create_suggestion():
     """Тест создания предложения"""
     response = client.post(
-        "/suggestions/?user_id=test_user_123",
+        "/suggestions/",
+        params={"user_id": "test_user_123"},  # user_id в параметрах, а не в JSON
         json={"title": "Test Suggestion", "text": "This is a test suggestion"},
     )
     assert response.status_code == 200
@@ -28,9 +29,11 @@ def test_get_suggestions():
 def test_get_suggestion_by_id():
     """Тест получения конкретного предложения"""
     create_response = client.post(
-        "/suggestions/?user_id=test_user",
+        "/suggestions/",
+        params={"user_id": "test_user"},
         json={"title": "Test", "text": "Test content"},
     )
+    assert create_response.status_code == 200
     suggestion_id = create_response.json()["id"]
 
     response = client.get(f"/suggestions/{suggestion_id}")
@@ -41,10 +44,14 @@ def test_get_suggestion_by_id():
 def test_update_suggestion():
     """Тест обновления предложения"""
     create_response = client.post(
-        "/suggestions/?user_id=test_user",
+        "/suggestions/",
+        params={"user_id": "test_user"},
         json={"title": "Original", "text": "Original text"},
     )
+    assert create_response.status_code == 200
     suggestion_id = create_response.json()["id"]
+
+    # Обновляем предложение
 
     update_response = client.put(
         f"/suggestions/{suggestion_id}",
@@ -59,9 +66,11 @@ def test_update_suggestion():
 def test_delete_suggestion():
     """Тест удаления предложения"""
     create_response = client.post(
-        "/suggestions/?user_id=test_user",
+        "/suggestions/",
+        params={"user_id": "test_user"},
         json={"title": "To Delete", "text": "Delete me"},
     )
+    assert create_response.status_code == 200
     suggestion_id = create_response.json()["id"]
 
     delete_response = client.delete(f"/suggestions/{suggestion_id}")
