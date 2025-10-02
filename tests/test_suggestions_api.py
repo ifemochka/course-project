@@ -51,8 +51,6 @@ def test_update_suggestion():
     assert create_response.status_code == 200
     suggestion_id = create_response.json()["id"]
 
-    # Обновляем предложение
-
     update_response = client.put(
         f"/suggestions/{suggestion_id}",
         json={"title": "Updated Title", "status": "approved"},
