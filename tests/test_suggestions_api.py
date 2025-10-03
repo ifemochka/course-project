@@ -8,8 +8,7 @@ client = TestClient(app)
 def test_create_suggestion():
     """Тест создания предложения"""
     response = client.post(
-        "/suggestions/",
-        params={"user_id": "test_user_123"},  # user_id в параметрах, а не в JSON
+        "/suggestions/?user_id=test_user_123",
         json={"title": "Test Suggestion", "text": "This is a test suggestion"},
     )
     assert response.status_code == 200
@@ -29,8 +28,7 @@ def test_get_suggestions():
 def test_get_suggestion_by_id():
     """Тест получения конкретного предложения"""
     create_response = client.post(
-        "/suggestions/",
-        params={"user_id": "test_user"},
+        "/suggestions/?user_id=test_user",
         json={"title": "Test", "text": "Test content"},
     )
     assert create_response.status_code == 200
@@ -44,8 +42,7 @@ def test_get_suggestion_by_id():
 def test_update_suggestion():
     """Тест обновления предложения"""
     create_response = client.post(
-        "/suggestions/",
-        params={"user_id": "test_user"},
+        "/suggestions/?user_id=test_user",
         json={"title": "Original", "text": "Original text"},
     )
     assert create_response.status_code == 200
@@ -64,8 +61,7 @@ def test_update_suggestion():
 def test_delete_suggestion():
     """Тест удаления предложения"""
     create_response = client.post(
-        "/suggestions/",
-        params={"user_id": "test_user"},
+        "/suggestions/?user_id=test_user",
         json={"title": "To Delete", "text": "Delete me"},
     )
     assert create_response.status_code == 200
@@ -76,3 +72,53 @@ def test_delete_suggestion():
 
     get_response = client.get(f"/suggestions/{suggestion_id}")
     assert get_response.status_code == 404
+
+
+def test_get_suggestions_filtered():
+    """Тест фильтрации предложений по статусу"""
+    client.post(
+        "/suggestions/?user_id=test_user",
+        json={"title": "Pending Suggestion", "text": "Pending content"},
+    )
+
+    response = client.get("/suggestions/?status=pending")
+    assert response.status_code == 200
+    suggestions = response.json()
+    assert all(s["status"] == "pending" for s in suggestions)
+
+
+def test_get_suggestion_not_found():
+    """Тест получения несуществующего предложения - должно вернуть 404"""
+    response = client.get("/suggestions/999")
+    assert response.status_code == 404
+    body = response.json()
+    assert "error" in body
+    assert body["error"]["code"] == "http_error"
+
+
+def test_update_suggestion_not_found():
+    """Тест обновления несуществующего предложения - должно вернуть 404"""
+    response = client.put(
+        "/suggestions/999", json={"title": "Updated", "status": "approved"}
+    )
+    assert response.status_code == 404
+    body = response.json()
+    assert "error" in body
+    assert body["error"]["code"] == "http_error"
+
+
+def test_delete_suggestion_not_found():
+    """Тест удаления несуществующего предложения - должно вернуть 404"""
+    response = client.delete("/suggestions/999")
+    assert response.status_code == 404
+    body = response.json()
+    assert "error" in body
+    assert body["error"]["code"] == "http_error"
+
+
+def test_create_suggestion_validation_error():
+    """Тест создания предложения с невалидными данными"""
+    response = client.post(
+        "/suggestions/", json={"title": "Test", "text": "Test content"}
+    )
+    assert response.status_code == 422
