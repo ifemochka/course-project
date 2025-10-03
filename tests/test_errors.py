@@ -17,3 +17,15 @@ def test_validation_error():
     assert r.status_code == 422
     body = r.json()
     assert body["error"]["code"] == "validation_error"
+
+
+def test_suggestion_not_found():
+    r = client.get("/suggestions/999")
+    assert r.status_code == 404
+    body = r.json()
+    assert "error" in body and body["error"]["code"] == "http_error"
+
+
+def test_suggestion_validation_error():
+    r = client.post("/suggestions/", json={})
+    assert r.status_code == 422
