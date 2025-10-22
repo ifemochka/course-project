@@ -17,7 +17,7 @@ def test_valid_suggestion_works():
 
 def test_missing_data_returns_error():
     """Тест что без данных возвращается ошибка"""
-    response = client.post("/suggestions/?user_id=test123", json={})  
+    response = client.post("/suggestions/?user_id=test123", json={})
 
     assert response.status_code == 422
 
