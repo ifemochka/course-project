@@ -20,7 +20,7 @@ API подвержено DDoS атакам и злоупотреблениям. 
 
 ### Negative    
 - Дополнительная сложность
-- Возможные false-positive 
+- Возможные false-positive
 
 
 ## Links
