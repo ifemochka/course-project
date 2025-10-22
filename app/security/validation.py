@@ -1,7 +1,10 @@
-from fastapi import HTTPException
 import re
 
+from fastapi import HTTPException
+
+
 def validate_suggestion_data(title: str, text: str, user_id: str):
+    """Валидация данных предложения"""
 
     if len(title) > 200:
         raise HTTPException(
