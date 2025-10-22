@@ -1,11 +1,16 @@
 from fastapi.testclient import TestClient
 
+from app.main import app
 
-def test_validation_boundaries(client: TestClient):
+client = TestClient(app)
+
+
+def test_validation_boundaries():
     """Тест граничных значений валидации"""
 
     response = client.post(
-        "/suggestions/?user_id=test123", json={"title": "A" * 201, "text": "Valid text"}
+        "/suggestions/?user_id=test123",
+        json={"title": "A" * 201, "text": "Valid text"},
     )
     assert response.status_code == 422
 
@@ -22,10 +27,11 @@ def test_validation_boundaries(client: TestClient):
     assert response.status_code == 422
 
 
-def test_error_format(client: TestClient):
+def test_error_format():
     """Тест формата ошибок"""
     response = client.post(
-        "/suggestions/?user_id=test123", json={"title": "A" * 201, "text": "Valid text"}
+        "/suggestions/?user_id=test123",
+        json={"title": "A" * 201, "text": "Valid text"},
     )
 
     assert response.status_code == 422
@@ -35,7 +41,7 @@ def test_error_format(client: TestClient):
     assert "Title exceeds maximum length" in error_data["detail"]
 
 
-def test_rate_limiting(client: TestClient):
+def test_rate_limiting():
     """Тест rate limiting (базовый)"""
     for i in range(5):
         response = client.post(
