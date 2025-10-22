@@ -21,7 +21,7 @@
 - Предотвращение SQL injection
 - Улучшение качества данных
 
-### Negative  
+### Negative
 - Дополнительная нагрузка на CPU
 - Возможные false-positive
 
