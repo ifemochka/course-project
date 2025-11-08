@@ -1,7 +1,9 @@
 from enum import Enum
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Query
+
+from app.schemas import ProblemDetailException, SuggestionCreate, SuggestionUpdate
 
 router = APIRouter(prefix="/suggestions", tags=["suggestions"])
 
@@ -16,24 +18,24 @@ class SuggestionStatus(str, Enum):
 
 
 @router.post("/")
-def create_suggestion(title: str, text: str, user_id: str = Query(...)):
+def create_suggestion(suggestion: SuggestionCreate):
     global current_id
-    suggestion = {
+    suggestion_data = {
         "id": current_id,
-        "title": title,
-        "text": text,
-        "user_id": user_id,
-        "status": SuggestionStatus.PENDING,
+        "title": suggestion.title,
+        "text": suggestion.text,
+        "user_id": suggestion.user_id,
+        "status": SuggestionStatus.PENDING.value,
     }
-    suggestions_db.append(suggestion)
+    suggestions_db.append(suggestion_data)
     current_id += 1
-    return suggestion
+    return suggestion_data
 
 
 @router.get("/")
 def get_suggestions(status: Optional[SuggestionStatus] = Query(None)):
     if status:
-        return [s for s in suggestions_db if s["status"] == status]
+        return [s for s in suggestions_db if s["status"] == status.value]
     return suggestions_db
 
 
@@ -42,26 +44,27 @@ def get_suggestion(suggestion_id: int):
     for suggestion in suggestions_db:
         if suggestion["id"] == suggestion_id:
             return suggestion
-    raise HTTPException(status_code=404, detail="Suggestion not found")
+    raise ProblemDetailException(
+        status_code=404,
+        detail="Suggestion not found",
+        error_type="https://example.com/not-found",
+    )
 
 
 @router.put("/{suggestion_id}")
-def update_suggestion(
-    suggestion_id: int,
-    title: str = None,
-    text: str = None,
-    status: SuggestionStatus = None,
-):
+def update_suggestion(suggestion_id: int, update_data: SuggestionUpdate):
     for suggestion in suggestions_db:
         if suggestion["id"] == suggestion_id:
-            if title is not None:
-                suggestion["title"] = title
-            if text is not None:
-                suggestion["text"] = text
-            if status is not None:
-                suggestion["status"] = status
+            update_dict = update_data.dict(exclude_unset=True)
+            for field, value in update_dict.items():
+                if value is not None:
+                    suggestion[field] = value
             return suggestion
-    raise HTTPException(status_code=404, detail="Suggestion not found")
+    raise ProblemDetailException(
+        status_code=404,
+        detail="Suggestion not found",
+        error_type="https://example.com/not-found",
+    )
 
 
 @router.delete("/{suggestion_id}")
@@ -71,4 +74,8 @@ def delete_suggestion(suggestion_id: int):
         if suggestion["id"] == suggestion_id:
             del suggestions_db[i]
             return {"message": "Suggestion deleted"}
-    raise HTTPException(status_code=404, detail="Suggestion not found")
+    raise ProblemDetailException(
+        status_code=404,
+        detail="Suggestion not found",
+        error_type="https://example.com/not-found",
+    )
