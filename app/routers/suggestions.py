@@ -1,18 +1,21 @@
 from enum import Enum
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Query, Depends
-from app.main import SuggestionCreate, SuggestionUpdate, ProblemDetailException
+from fastapi import APIRouter, Query
+
+from app.main import ProblemDetailException, SuggestionCreate, SuggestionUpdate
 
 router = APIRouter(prefix="/suggestions", tags=["suggestions"])
 
 suggestions_db = []
 current_id = 1
 
+
 class SuggestionStatus(str, Enum):
     PENDING = "pending"
     APPROVED = "approved"
     REJECTED = "rejected"
+
 
 @router.post("/")
 def create_suggestion(suggestion: SuggestionCreate):
@@ -22,17 +25,19 @@ def create_suggestion(suggestion: SuggestionCreate):
         "title": suggestion.title,
         "text": suggestion.text,
         "user_id": suggestion.user_id,
-        "status": SuggestionStatus.PENDING,
+        "status": SuggestionStatus.PENDING.value,
     }
     suggestions_db.append(suggestion_data)
     current_id += 1
     return suggestion_data
 
+
 @router.get("/")
 def get_suggestions(status: Optional[SuggestionStatus] = Query(None)):
     if status:
-        return [s for s in suggestions_db if s["status"] == status]
+        return [s for s in suggestions_db if s["status"] == status.value]
     return suggestions_db
+
 
 @router.get("/{suggestion_id}")
 def get_suggestion(suggestion_id: int):
@@ -42,8 +47,9 @@ def get_suggestion(suggestion_id: int):
     raise ProblemDetailException(
         status_code=404,
         detail="Suggestion not found",
-        error_type="https://example.com/not-found"
+        error_type="https://example.com/not-found",
     )
+
 
 @router.put("/{suggestion_id}")
 def update_suggestion(suggestion_id: int, update_data: SuggestionUpdate):
@@ -57,8 +63,9 @@ def update_suggestion(suggestion_id: int, update_data: SuggestionUpdate):
     raise ProblemDetailException(
         status_code=404,
         detail="Suggestion not found",
-        error_type="https://example.com/not-found"
+        error_type="https://example.com/not-found",
     )
+
 
 @router.delete("/{suggestion_id}")
 def delete_suggestion(suggestion_id: int):
@@ -70,5 +77,5 @@ def delete_suggestion(suggestion_id: int):
     raise ProblemDetailException(
         status_code=404,
         detail="Suggestion not found",
-        error_type="https://example.com/not-found"
-    )
+        error_type="https://example.com/not-found",
+    ) 
