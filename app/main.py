@@ -48,12 +48,13 @@ async def problem_detail_handler(request: Request, exc: ProblemDetailException):
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     errors = []
     for error in exc.errors():
-        errors.append({
-            "loc": error["loc"],
-            "msg": error["msg"],
-            "type": error["type"],
-        })
-
+        errors.append(
+            {
+                "loc": error["loc"],
+                "msg": error["msg"],
+                "type": error["type"],
+            }
+        )
     return JSONResponse(
         status_code=422,
         content={

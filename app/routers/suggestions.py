@@ -78,4 +78,4 @@ def delete_suggestion(suggestion_id: int):
         status_code=404,
         detail="Suggestion not found",
         error_type="https://example.com/not-found",
-    ) 
+    )
