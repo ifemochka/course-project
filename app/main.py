@@ -1,32 +1,13 @@
 import uuid
-from typing import Optional
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, constr
 
 from app.routers import suggestions
+from app.schemas import ProblemDetailException
 
 app = FastAPI(title="SecDev Course App", version="0.1.0")
-
-
-class SuggestionCreate(BaseModel):
-    title: constr(strip_whitespace=True, min_length=1, max_length=200)
-    text: constr(strip_whitespace=True, max_length=1000) = ""
-    user_id: constr(strip_whitespace=True, min_length=1, max_length=50)
-
-
-class SuggestionUpdate(BaseModel):
-    title: Optional[constr(strip_whitespace=True, min_length=1, max_length=200)] = None
-    text: Optional[constr(strip_whitespace=True, max_length=1000)] = None
-    status: Optional[str] = None
-
-
-class ProblemDetailException(HTTPException):
-    def __init__(self, status_code: int, detail: str, error_type: str = "about:blank"):
-        super().__init__(status_code=status_code, detail=detail)
-        self.error_type = error_type
 
 
 @app.exception_handler(ProblemDetailException)

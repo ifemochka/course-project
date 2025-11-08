@@ -3,7 +3,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from app.main import ProblemDetailException, SuggestionCreate, SuggestionUpdate
+from app.schemas import ProblemDetailException, SuggestionCreate, SuggestionUpdate
 
 router = APIRouter(prefix="/suggestions", tags=["suggestions"])
 
