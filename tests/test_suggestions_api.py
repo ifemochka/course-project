@@ -43,7 +43,6 @@ def test_create_and_get_suggestion():
         json={"title": "Test Title", "text": "Test Description", "user_id": "user-123"},
     )
     assert create_response.status_code == 200
-    created_data = create_response.json()
 
     list_response = client.get("/suggestions/")
     assert list_response.status_code == 200
