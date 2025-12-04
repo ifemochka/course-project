@@ -1,0 +1,12 @@
+waivers:
+  - id: "example-1"
+    vulnerability: "CVE-2023-XXXXX"
+    package: "example-package@1.0.0"
+    reason: "False positive in our use case"
+    expires: "2024-12-31"
+
+  - id: "example-2"
+    vulnerability: "CVE-2023-YYYYY"
+    package: "another-package@2.0.0"
+    reason: "Upgrade planned next sprint"
+    expires: "2024-06-30"
