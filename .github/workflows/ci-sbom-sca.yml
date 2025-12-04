@@ -1,0 +1,62 @@
+name: SBOM & SCA
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  sbom-sca:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Install Syft
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+
+      - name: Generate SBOM
+        run: |
+          mkdir -p EVIDENCE/P09
+          syft packages . -o cyclonedx-json > EVIDENCE/P09/sbom.json
+
+      - name: Install Grype
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+
+      - name: Run SCA scan
+        run: |
+          grype sbom:EVIDENCE/P09/sbom.json -o json > EVIDENCE/P09/sca_report.json
+
+      - name: Create summary
+        run: |
+          echo "# SCA Scan Summary" > EVIDENCE/P09/sca_summary.md
+          echo "Generated: $(date)" >> EVIDENCE/P09/sca_summary.md
+          echo "" >> EVIDENCE/P09/sca_summary.md
+          echo "Files:" >> EVIDENCE/P09/sca_summary.md
+          echo "- sbom.json: Software Bill of Materials" >> EVIDENCE/P09/sca_summary.md
+          echo "- sca_report.json: Vulnerability report" >> EVIDENCE/P09/sca_summary.md
+          echo "" >> EVIDENCE/P09/sca_summary.md
+          echo "Next steps:" >> EVIDENCE/P09/sca_summary.md
+          echo "1. Check sca_report.json for vulnerabilities" >> EVIDENCE/P09/sca_summary.md
+          echo "2. Update dependencies if needed" >> EVIDENCE/P09/sca_summary.md
+          echo "3. Review regularly" >> EVIDENCE/P09/sca_summary.md
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: p09-evidence
+          path: EVIDENCE/P09/

@@ -1,0 +1,35 @@
+rules:
+  - id: python-sql-injection
+    patterns:
+      - pattern: db.execute("...$VAR...")
+      - pattern: f"SELECT ... {variable} ..."
+    message: Potential SQL injection
+    languages: [python]
+    severity: WARNING
+
+  - id: python-hardcoded-secret
+    patterns:
+      - pattern: password = "..."
+      - pattern: api_key = "..."
+      - pattern: token = "..."
+    message: Hardcoded secret detected
+    languages: [python]
+    severity: ERROR
+
+  - id: python-insecure-deserialization
+    patterns:
+      - pattern: pickle.loads(...)
+      - pattern: marshal.loads(...)
+    message: Insecure deserialization
+    languages: [python]
+    severity: WARNING
+
+  - id: fastapi-missing-validation
+    patterns:
+      - pattern: |
+          @app.$METHOD(...)
+          def $FUNC(..., $PARAM: str):
+            ...
+    message: Missing Pydantic validation for endpoint parameters
+    languages: [python]
+    severity: INFO
