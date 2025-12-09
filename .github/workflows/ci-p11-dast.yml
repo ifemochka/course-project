@@ -4,6 +4,17 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
+    paths:
+      - 'app/**'
+      - 'src/**'
+      - '.github/workflows/ci-p11-dast.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   dast:
@@ -11,10 +22,10 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Create evidence dir
+      - name: Create evidence directory
         run: mkdir -p EVIDENCE/P11
 
       - name: Setup Python
@@ -24,27 +35,66 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install --upgrade pip
-          pip install fastapi uvicorn
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-      - name: Start app
+      - name: Start FastAPI application
         run: |
-          uvicorn app.main:app --host 0.0.0.0 --port 8080 &
-          sleep 5
-          curl -f http://localhost:8080/health || true
+          uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+          APP_PID=$!
+          
+          echo "Waiting for app to start..."
+          for i in {1..30}; do
+            if curl -s -f http://localhost:8000/health > /dev/null 2>&1; then
+              echo "App is ready!"
+              break
+            fi
+            sleep 1
+          done
+          
+          curl -f http://localhost:8000/health || (echo "App failed to start"; exit 1)
+          
+          echo $APP_PID > /tmp/app.pid
 
-      - name: Run ZAP baseline scan
+      - name: Run OWASP ZAP baseline scan
         run: |
-          docker run --rm --network host -v $PWD:/zap/wrk owasp/zap2docker-stable \
+          echo "Starting ZAP baseline scan..."
+          docker run --rm --network host -v $PWD:/zap/wrk:rw \
+            owasp/zap2docker-stable:latest \
             zap-baseline.py \
-              -t http://localhost:8080 \
+              -t http://localhost:8000 \
               -r zap_baseline.html \
               -J zap_baseline.json \
+              -a \
+              -c zap-config.yml \
               -d || true
-          mv zap_baseline.* EVIDENCE/P11/ 2>/dev/null || true
+          
+          mv zap_baseline.html EVIDENCE/P11/ 2>/dev/null || echo "No HTML report"
+          mv zap_baseline.json EVIDENCE/P11/ 2>/dev/null || echo "No JSON report"
 
-      - name: Upload evidence
+      - name: Stop application
+        if: always()
+        run: |
+          if [ -f /tmp/app.pid ]; then
+            kill $(cat /tmp/app.pid) 2>/dev/null || true
+          fi
+
+      - name: Upload DAST evidence
         uses: actions/upload-artifact@v4
         with:
           name: p11-dast-evidence
           path: EVIDENCE/P11/
+          retention-days: 90
+
+      - name: Display scan summary
+        if: always()
+        run: |
+          echo "=== DAST Scan Summary ==="
+          if [ -f EVIDENCE/P11/zap_baseline.json ]; then
+            echo "Reports generated successfully"
+            echo "HTML: EVIDENCE/P11/zap_baseline.html"
+            echo "JSON: EVIDENCE/P11/zap_baseline.json"
+          else
+            echo "No ZAP reports found"
+          fi
+          echo "========================="
