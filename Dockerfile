@@ -1,20 +1,26 @@
-# Build stage
-FROM python:3.11-slim AS build
-WORKDIR /app
-COPY requirements.txt requirements-dev.txt ./
-RUN pip install --no-cache-dir -r requirements.txt -r requirements-dev.txt
-COPY . .
-RUN pytest -q
+FROM python:3.11-slim as builder
 
-# Runtime stage
-FROM python:3.11-slim
 WORKDIR /app
-RUN useradd -m appuser
-COPY --from=build /usr/local/lib/python3.11 /usr/local/lib/python3.11
-COPY --from=build /usr/local/bin /usr/local/bin
-COPY . .
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir --user -r requirements.txt
+
+FROM python:3.11-slim
+
+RUN groupadd -r app && useradd -r -g app app
+
+WORKDIR /app
+
+COPY --from=builder /root/.local /home/app/.local
+COPY --chown=app:app . .
+
+ENV PATH=/home/app/.local/bin:$PATH
+ENV PYTHONPATH=/app
+
+USER app
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
 EXPOSE 8000
-HEALTHCHECK CMD curl -f http://localhost:8000/health || exit 1
-USER appuser
-ENV PYTHONUNBUFFERED=1
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

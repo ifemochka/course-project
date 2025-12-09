@@ -1,0 +1,40 @@
+title = "gitleaks config for Suggestion Box"
+
+[[rules]]
+description = "Generic API Key"
+id = "generic-api-key"
+regex = '''(?i)(api_key|apikey|secret_key|secret)[=:]\s*['"][0-9a-zA-Z]{32,}['"]'''
+tags = ["key", "API"]
+
+[[rules]]
+description = "Generic Password"
+id = "generic-password"
+regex = '''(?i)(password|passwd|pwd)[=:]\s*['"][^'"]{6,}['"]'''
+tags = ["password", "login"]
+
+[[rules]]
+description = "JWT Token"
+id = "jwt-token"
+regex = '''eyJ[a-zA-Z0-9]{10,}\.eyJ[a-zA-Z0-9]{10,}\.[a-zA-Z0-9_-]{10,}'''
+tags = ["jwt", "token"]
+
+[[rules]]
+description = "AWS Access Key"
+id = "aws-access-key"
+regex = '''AKIA[0-9A-Z]{16}'''
+tags = ["AWS", "key"]
+
+[[allowlist]]
+description = "Example strings in code"
+regexes = [
+    '''example_password.*''',
+    '''test_api_key.*''',
+    '''placeholder.*'''
+]
+
+[[allowlist]]
+paths = [
+    "tests/",
+    "README.md",
+    "security/.gitleaks.toml"
+]
