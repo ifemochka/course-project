@@ -1,0 +1,13 @@
+scan:
+  scanners:
+    - vuln
+    - config
+    - secret
+  severity:
+    - CRITICAL
+    - HIGH
+    - MEDIUM
+  ignore-unfixed: false
+
+format: "json"
+output: "EVIDENCE/P12/trivy_report.json"
