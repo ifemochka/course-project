@@ -1,0 +1,11 @@
+quiet: true
+compact: true
+framework:
+  - dockerfile
+  - kubernetes
+
+skip-check:
+  - CKV_DOCKER_3
+  - CKV_DOCKER_7
+
+soft-fail: false
